@@ -28,28 +28,50 @@ def run_agent(task_id: str = "pii_easy"):
     env = TalentAuditEnv()
     obs = env.reset(task_id)
     
-    # Simple loop
     done = False
     while not done:
         print(f"--- Step {obs.step} ---")
+        print(f"Observation records: {[r.record_id for r in obs.records]}")
         
-        # Here you would typically prompt your LLM to decide the action:
-        # response = client.chat.completions.create(
-        #     model=MODEL_NAME,
-        #     messages=[{"role": "user", "content": f"Decide action for obs: {obs.model_dump_json()}"}]
-        # )
-        
-        # For demonstration, we'll just break or do a dummy action
-        print("Prompting LLM with the observation...")
-        print("Observation records:", [r.record_id for r in obs.records])
-        
-        # TODO: parse LLM output into an Action object
-        # ...
-        
-        # dummy breakout to prevent infinite loop for now
-        break
-        
-    print("Agent finished.")
+        # Construct the prompt with rigorous rules
+        system_prompt = (
+            "You are an AI compliance agent interacting with the Talent-Audit-Env.\n"
+            "Your task is to review the observation and choose ONE valid action: Sanitize, Categorize, or Flag.\n"
+            "- Sanitize: Redact PII fields like 'phone', 'email', 'name', 'address'. Do not alter technical skills.\n"
+            "- Categorize: Assign a TechCategory (e.g. 'Frontend', 'Backend', 'DevOps').\n"
+            "- Flag: Mark risk level ('High', 'Low', 'Medium') based on conflicting claims.\n\n"
+            "You MUST output raw JSON matching exactly ONE of these payload structures:\n"
+            "1) {\"action_type\": \"Sanitize\", \"record_id\": \"...\", \"sanitize_payload\": {\"fields\": [\"phone\"]}}\n"
+            "2) {\"action_type\": \"Categorize\", \"record_id\": \"...\", \"categorize_payload\": {\"category\": \"Backend\", \"confidence\": 1.0}}\n"
+            "3) {\"action_type\": \"Flag\", \"record_id\": \"...\", \"flag_payload\": {\"risk_level\": \"High\", \"reason\": \"...\"}}"
+        )
+
+        try:
+            print(f"Prompting LLM ({MODEL_NAME})...")
+            response = client.chat.completions.create(
+                model=MODEL_NAME,
+                response_format={ "type": "json_object" },
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": f"Decide action for obs: {obs.model_dump_json()}"}
+                ]
+            )
+            
+            result_json = json.loads(response.choices[0].message.content)
+            print(f"LLM decided: {result_json['action_type']} on {result_json['record_id']}")
+            
+            # Parse into our Action model
+            action = Action.model_validate(result_json)
+            
+            # Apply action in environment
+            obs, reward, done, info = env.step(action)
+            print(f"Reward: {reward.total:+.2f} -> {reward.feedback}\n")
+            
+        except Exception as e:
+            print(f"Agent encountered error: {e}")
+            break
+            
+    print(f"Agent finished. Terminal state tracking total reward: {env.state()['total_reward']:+.2f}")
 
 if __name__ == "__main__":
     run_agent("pii_easy")
