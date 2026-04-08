@@ -1,3 +1,12 @@
+---
+title: Resume Redaction Guard V1
+emoji: 🛡️
+colorFrom: pink
+colorTo: purple
+sdk: docker
+pinned: false
+---
+
 # Talent-Audit-Env 🛡️
 
 > **An OpenEnv-compliant Reinforcement Learning environment for Automated HR Data Compliance.**
