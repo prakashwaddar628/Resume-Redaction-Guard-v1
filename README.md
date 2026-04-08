@@ -36,9 +36,15 @@ python run_demo.py --task pii_easy
 python run_demo.py --task pii_medium
 python run_demo.py --task audit_hard
 
-# 4. Start the HTTP API server
+# 4. Start the backend HTTP API server
 uvicorn main:app --reload --port 8000
 # → Swagger UI: http://localhost:8000/docs
+
+# 5. Connect and launch the premium Next.js frontend
+cd frontend
+npm install
+npm run dev
+# → View UI: http://localhost:3000
 ```
 
 ---

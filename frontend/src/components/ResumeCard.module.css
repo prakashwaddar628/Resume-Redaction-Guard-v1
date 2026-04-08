@@ -1,0 +1,120 @@
+.card {
+  padding: 1.5rem;
+  border-left: 4px solid var(--accent-cyan);
+  background: rgba(255,255,255,0.03);
+  margin-bottom: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  transition: all 0.5s ease;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  padding-bottom: 0.5rem;
+}
+
+.recordId {
+  font-family: var(--font-mono);
+  color: var(--accent-cyan);
+  font-size: 0.9rem;
+}
+
+.status {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.piiGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.field {
+  background: rgba(0,0,0,0.3);
+  padding: 0.8rem;
+  border-radius: 6px;
+  border: 1px solid rgba(255,255,255,0.05);
+}
+
+.fieldLabel {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: #777;
+  margin-bottom: 0.3rem;
+  font-weight: 600;
+}
+
+.fieldValue {
+  font-size: 0.95rem;
+  color: #ddd;
+  word-break: break-all;
+}
+
+.fieldValue.redacted {
+  color: var(--accent-red);
+  font-family: var(--font-mono);
+  font-weight: bold;
+  animation: flash 0.5s ease-out;
+}
+
+.techSection {
+  margin-top: 1rem;
+}
+
+.techHeader {
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  color: #999;
+  margin-bottom: 0.8rem;
+}
+
+.skillList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.skillBadge {
+  background: rgba(0, 240, 255, 0.1);
+  border: 1px solid rgba(0, 240, 255, 0.3);
+  color: var(--accent-cyan);
+  padding: 0.2rem 0.6rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.categoryTag {
+  background: rgba(157, 78, 221, 0.15);
+  border: 1px solid var(--accent-purple);
+  color: #fff;
+  padding: 0.2rem 0.8rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  box-shadow: 0 0 10px var(--accent-purple-glow);
+}
+
+.riskHigh {
+  background: rgba(255, 51, 102, 0.2);
+  border: 1px solid var(--accent-red);
+  color: #fff;
+  box-shadow: 0 0 10px var(--accent-red-glow);
+}
+
+.riskLow {
+  background: rgba(0, 255, 102, 0.1);
+  border: 1px solid var(--accent-green);
+  color: #fff;
+}
+
+@keyframes flash {
+  0% { background: var(--accent-red); color: white; }
+  100% { background: transparent; color: var(--accent-red); }
+}
