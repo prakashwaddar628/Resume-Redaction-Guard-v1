@@ -1,0 +1,143 @@
+# openenv.yaml — Talent-Audit-Env
+# OpenEnv-compliant manifest (v0.3 schema)
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+name: "talent-audit-env"
+version: "1.0.0"
+description: >
+  An OpenEnv-compliant Reinforcement-Learning environment for Automated HR
+  Data Compliance.  Agents must sanitise PII, categorise resumes by tech-stack,
+  and detect conflicting information in professional profiles — all while
+  preserving the integrity of technical skills data.
+
+author: "Resume-Redaction-Guard Team"
+license: "MIT"
+
+# ── Entry point ──────────────────────────────────────────────────────────────
+entry_point: "env:TalentAuditEnv"
+
+# ── Runtime ──────────────────────────────────────────────────────────────────
+runtime:
+  language: "python"
+  python_version: ">=3.10"
+  install: "pip install -r requirements.txt"
+  run: "python run_demo.py"
+  serve: "uvicorn main:app --host 0.0.0.0 --port 8000"
+
+# ── Environment specification ────────────────────────────────────────────────
+environment:
+  observation_space:
+    type: "dict"
+    description: >
+      A JSON-serialisable Observation object containing one or more ResumeRecord
+      instances, the current step index, task metadata, and a done flag.
+    schema_ref: "models.Observation"
+
+  action_space:
+    type: "union"
+    description: >
+      One of three structured actions: Sanitize (redact PII fields),
+      Categorize (assign tech-stack label), or Flag (mark High-Risk profile).
+    actions:
+      - name: "Sanitize"
+        schema_ref: "models.Action[ActionType.SANITIZE]"
+        description: "Redact one or more PII fields from a specific resume record."
+      - name: "Categorize"
+        schema_ref: "models.Action[ActionType.CATEGORIZE]"
+        description: "Assign a TechCategory label to a specific resume record."
+      - name: "Flag"
+        schema_ref: "models.Action[ActionType.FLAG]"
+        description: "Mark a resume record as Low / Medium / High risk."
+
+  reward_space:
+    type: "scalar"
+    range: [-1.5, 2.0]
+    description: >
+      Composite scalar reward.  Positive signals reward correct PII removal
+      and accurate categorisation; negative signals penalise data loss and
+      false flagging.
+    components:
+      - signal: "pii_removal"
+        value: +0.8
+        condition: "All target PII fields redacted with no skill data lost."
+      - signal: "categorization"
+        value: +0.2
+        condition: "Correct TechCategory assigned to a resume record."
+      - signal: "data_loss"
+        value: -0.5
+        condition: "A technical skill was deleted or altered accidentally."
+      - signal: "conflict_detect"
+        value: +0.3
+        condition: "A genuinely conflicting profile correctly flagged as High-Risk."
+      - signal: "false_flag"
+        value: -0.3
+        condition: "A clean profile incorrectly flagged as High-Risk."
+
+# ── Tasks ────────────────────────────────────────────────────────────────────
+tasks:
+  - id: "pii_easy"
+    difficulty: "easy"
+    max_steps: 5
+    description: >
+      Remove ALL phone numbers from a single JSON resume record without
+      altering any technical skills, work experience, or certifications.
+    entry_action: "Sanitize"
+    evaluation_metric: "pii_removal_recall"
+
+  - id: "pii_medium"
+    difficulty: "medium"
+    max_steps: 20
+    description: >
+      Process five resume records.  For each: (1) assign a correct TechCategory,
+      and (2) redact all PII fields (name, email, phone, address).
+      Technical skills and work history must remain untouched.
+    entry_action: "Sanitize | Categorize"
+    evaluation_metric: "pii_recall + category_accuracy"
+
+  - id: "audit_hard"
+    difficulty: "hard"
+    max_steps: 15
+    description: >
+      Analyse three resume records for cross-record inconsistencies such as
+      impossible employment dates or overlapping concurrent roles.  Flag
+      conflicting profiles as High-Risk using the Flag action.  Under no
+      circumstances may technical skills be removed.
+    entry_action: "Flag"
+    evaluation_metric: "conflict_f1 + data_integrity"
+
+# ── Docker ───────────────────────────────────────────────────────────────────
+docker:
+  image: "talent-audit-env:1.0.0"
+  base_image: "python:3.11-slim"
+  port: 8000
+  build_command: "docker build -t talent-audit-env:1.0.0 ."
+  run_command: "docker run -p 8000:8000 talent-audit-env:1.0.0"
+
+# ── Evaluation ───────────────────────────────────────────────────────────────
+evaluation:
+  metrics:
+    - name: "pii_removal_recall"
+      description: "Fraction of PII fields correctly redacted."
+    - name: "category_accuracy"
+      description: "Fraction of resumes assigned the correct TechCategory."
+    - name: "data_integrity"
+      description: "Fraction of technical skill entries preserved intact."
+    - name: "conflict_f1"
+      description: "F1 score for correct High-Risk / Low-Risk flagging."
+  scoring_formula: >
+    score = 0.4 * pii_removal_recall
+          + 0.3 * category_accuracy
+          + 0.2 * data_integrity
+          + 0.1 * conflict_f1
+
+# ── Metadata ─────────────────────────────────────────────────────────────────
+metadata:
+  tags:
+    - "hr-compliance"
+    - "pii-redaction"
+    - "resume-processing"
+    - "reinforcement-learning"
+    - "agentic-systems"
+    - "openenv"
+  repository: "https://github.com/example/Talent-Audit-Env"
+  docs: "https://github.com/example/Talent-Audit-Env/blob/main/README.md"

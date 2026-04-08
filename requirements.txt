@@ -1,0 +1,15 @@
+# Talent-Audit-Env — Python dependencies
+# Pin versions for reproducibility
+
+# Core env / validation
+pydantic>=2.6.0,<3.0.0
+
+# HTTP server (OpenEnv API layer)
+fastapi>=0.110.0,<1.0.0
+uvicorn[standard]>=0.29.0,<1.0.0
+
+# YAML parsing (manifest loading)
+pyyaml>=6.0.1,<7.0.0
+
+# Type stubs (optional, dev comfort)
+# pydantic[email]>=2.6.0   # uncomment if email validation is needed
