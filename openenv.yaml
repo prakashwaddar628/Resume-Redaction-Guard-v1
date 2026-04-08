@@ -22,7 +22,7 @@ runtime:
   python_version: ">=3.10"
   install: "pip install -r requirements.txt"
   run: "python run_demo.py"
-  serve: "uvicorn main:app --host 0.0.0.0 --port 8000"
+  serve: "uvicorn main:app --host 0.0.0.0 --port 7860"
 
 # ── Environment specification ────────────────────────────────────────────────
 environment:
@@ -109,9 +109,9 @@ tasks:
 docker:
   image: "talent-audit-env:1.0.0"
   base_image: "python:3.11-slim"
-  port: 8000
+  port: 7860
   build_command: "docker build -t talent-audit-env:1.0.0 ."
-  run_command: "docker run -p 8000:8000 talent-audit-env:1.0.0"
+  run_command: "docker run -p 7860:7860 talent-audit-env:1.0.0"
 
 # ── Evaluation ───────────────────────────────────────────────────────────────
 evaluation:

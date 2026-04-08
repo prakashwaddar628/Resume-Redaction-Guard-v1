@@ -37,8 +37,8 @@ python run_demo.py --task pii_medium
 python run_demo.py --task audit_hard
 
 # 4. Start the backend HTTP API server
-uvicorn main:app --reload --port 8000
-# → Swagger UI: http://localhost:8000/docs
+uvicorn main:app --reload --port 7860
+# → Swagger UI: http://localhost:7860/docs
 
 # 5. Connect and launch the premium Next.js frontend
 cd frontend
@@ -56,7 +56,7 @@ npm run dev
 docker build -t talent-audit-env:1.0.0 .
 
 # Run (API server)
-docker run -p 8000:8000 talent-audit-env:1.0.0
+docker run -p 7860:7860 talent-audit-env:1.0.0
 
 # Run (CLI demo)
 docker run talent-audit-env:1.0.0 python run_demo.py

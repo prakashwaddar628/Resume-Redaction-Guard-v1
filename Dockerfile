@@ -28,30 +28,34 @@ LABEL org.opencontainers.image.title="Talent-Audit-Env" \
       org.opencontainers.image.description="OpenEnv-compliant HR Data Compliance environment" \
       org.opencontainers.image.licenses="MIT"
 
-ENV PYTHONDONTWRITEBYTECODE=1 \
+# Hugging Face Spaces requirements
+RUN useradd -m -u 1000 user
+USER user
+ENV PATH="/home/user/.local/bin:$PATH" \
+    PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PYTHONPATH=/app
 
 WORKDIR /app
 
-# Copy pre-built site-packages from builder stage
-COPY --from=builder /install /usr/local
+# Copy pre-built site-packages from builder stage (changing owner to user)
+COPY --from=builder --chown=user:user /install /usr/local
 
 # Copy application source
-COPY models.py   ./models.py
-COPY tasks.py    ./tasks.py
-COPY env.py      ./env.py
-COPY main.py     ./main.py
-COPY run_demo.py ./run_demo.py
-COPY openenv.yaml ./openenv.yaml
+COPY --chown=user:user models.py   ./models.py
+COPY --chown=user:user tasks.py    ./tasks.py
+COPY --chown=user:user env.py      ./env.py
+COPY --chown=user:user main.py     ./main.py
+COPY --chown=user:user run_demo.py ./run_demo.py
+COPY --chown=user:user openenv.yaml ./openenv.yaml
 
-# Expose port (OpenEnv convention)
-EXPOSE 8000
+# Expose port (HF convention is 7860)
+EXPOSE 7860
 
 # Health-check  (requires the /health endpoint in main.py)
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:7860/health')"
 
 # Default: start the FastAPI server
 # Override with `docker run ... python run_demo.py` for CLI demo
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "7860"]
